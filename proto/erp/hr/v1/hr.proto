@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package erp.hr.v1;
+
+option go_package = "erp/platform/genproto/erp/hr/v1;hrv1";
+
+message Department {
+  string id = 1;
+  string name = 2;
+  int64 created_at_unix = 3;
+}
+
+message Employee {
+  string id = 1;
+  string department_id = 2;
+  string user_id = 3;
+  string full_name = 4;
+  string job_title = 5;
+  int64 created_at_unix = 6;
+}
+
+message CreateDepartmentRequest {
+  string name = 1;
+}
+
+message ListDepartmentsRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message ListDepartmentsResponse {
+  repeated Department departments = 1;
+}
+
+message CreateEmployeeRequest {
+  string department_id = 1;
+  string user_id = 2;
+  string full_name = 3;
+  string job_title = 4;
+}
+
+message ListEmployeesRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message ListEmployeesResponse {
+  repeated Employee employees = 1;
+}
+
+message GetEmployeeRequest {
+  string id = 1;
+}
+
+service HRService {
+  rpc CreateDepartment(CreateDepartmentRequest) returns (Department);
+  rpc ListDepartments(ListDepartmentsRequest) returns (ListDepartmentsResponse);
+  rpc CreateEmployee(CreateEmployeeRequest) returns (Employee);
+  rpc GetEmployee(GetEmployeeRequest) returns (Employee);
+  rpc ListEmployees(ListEmployeesRequest) returns (ListEmployeesResponse);
+}

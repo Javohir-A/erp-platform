@@ -1,0 +1,11 @@
+1) cd deploy && docker compose up --build
+2) Login (bootstrap admin from compose env):
+   curl -s -X POST http://localhost:8080/v1/auth/login \
+     -H 'Content-Type: application/json' \
+     -d '{"email":"admin@erp.local","password":"admin123"}'
+3) Use access_token on protected routes:
+   curl -s http://localhost:8080/v1/auth/me -H "Authorization: Bearer <TOKEN>"
+4) Create warehouse product, then HR department, employee, supplier, PO lines referencing product UUIDs, etc.
+
+Proto codegen (when you change .proto files):
+  make -C .. proto

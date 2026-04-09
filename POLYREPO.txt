@@ -1,0 +1,12 @@
+Polyrepo split (each block is an independent Git repo in a typical org):
+
+1) erp-proto          -> contents of /proto plus generated /genproto published as module erp/platform/genproto (or buf BSR).
+2) erp-auth-service   -> /services/auth-service  (go.mod replace -> published genproto version).
+3) erp-hr-service     -> /services/hr-service
+4) erp-procurement    -> /services/procurement-service
+5) erp-warehouse      -> /services/warehouse-service
+6) erp-finance        -> /services/finance-service
+7) erp-api-gateway    -> /services/gateway
+8) erp-deploy         -> /deploy (compose, k8s, terraform)
+
+CI: tag genproto module versions; services bump require on release.

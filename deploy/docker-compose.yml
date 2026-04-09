@@ -1,0 +1,106 @@
+# From this directory: docker compose up --build
+# API: http://localhost:8080  | Postgres: localhost:5432 (user erp / pass erp for app DBs)
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - ./init-postgres:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+
+  auth-service:
+    build:
+      context: ..
+      dockerfile: deploy/dockerfiles/auth-service.Dockerfile
+    environment:
+      POSTGRES_DSN: postgres://erp:erp@postgres:5432/auth?sslmode=disable
+      GRPC_ADDR: :50051
+      JWT_SECRET: dev-shared-secret-change-me
+      BOOTSTRAP_ADMIN_EMAIL: admin@erp.local
+      BOOTSTRAP_ADMIN_PASSWORD: admin123
+    depends_on:
+      postgres:
+        condition: service_healthy
+    expose:
+      - "50051"
+
+  hr-service:
+    build:
+      context: ..
+      dockerfile: deploy/dockerfiles/hr-service.Dockerfile
+    environment:
+      POSTGRES_DSN: postgres://erp:erp@postgres:5432/hr?sslmode=disable
+      GRPC_ADDR: :50052
+    depends_on:
+      postgres:
+        condition: service_healthy
+    expose:
+      - "50052"
+
+  procurement-service:
+    build:
+      context: ..
+      dockerfile: deploy/dockerfiles/procurement-service.Dockerfile
+    environment:
+      POSTGRES_DSN: postgres://erp:erp@postgres:5432/procurement?sslmode=disable
+      GRPC_ADDR: :50053
+    depends_on:
+      postgres:
+        condition: service_healthy
+    expose:
+      - "50053"
+
+  warehouse-service:
+    build:
+      context: ..
+      dockerfile: deploy/dockerfiles/warehouse-service.Dockerfile
+    environment:
+      POSTGRES_DSN: postgres://erp:erp@postgres:5432/warehouse?sslmode=disable
+      GRPC_ADDR: :50054
+    depends_on:
+      postgres:
+        condition: service_healthy
+    expose:
+      - "50054"
+
+  finance-service:
+    build:
+      context: ..
+      dockerfile: deploy/dockerfiles/finance-service.Dockerfile
+    environment:
+      POSTGRES_DSN: postgres://erp:erp@postgres:5432/finance?sslmode=disable
+      GRPC_ADDR: :50055
+    depends_on:
+      postgres:
+        condition: service_healthy
+    expose:
+      - "50055"
+
+  gateway:
+    build:
+      context: ..
+      dockerfile: deploy/dockerfiles/gateway.Dockerfile
+    environment:
+      HTTP_PORT: :8080
+      AUTH_GRPC_ADDR: auth-service:50051
+      HR_GRPC_ADDR: hr-service:50052
+      PROCUREMENT_GRPC_ADDR: procurement-service:50053
+      WAREHOUSE_GRPC_ADDR: warehouse-service:50054
+      FINANCE_GRPC_ADDR: finance-service:50055
+    ports:
+      - "8080:8080"
+    depends_on:
+      - auth-service
+      - hr-service
+      - procurement-service
+      - warehouse-service
+      - finance-service

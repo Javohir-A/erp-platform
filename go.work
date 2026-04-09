@@ -1,0 +1,11 @@
+go 1.23.0
+
+use (
+	./genproto
+	./services/auth-service
+	./services/finance-service
+	./services/gateway
+	./services/hr-service
+	./services/procurement-service
+	./services/warehouse-service
+)

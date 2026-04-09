@@ -1,0 +1,74 @@
+%% ERP platform — logical ERD (Postgres: one database per service; no cross-DB FKs).
+%% Integrations happen via API/gateway or async events in a real deployment.
+
+erDiagram
+  AUTH_USER ||--o| HR_EMPLOYEE : "optional link user_id"
+  HR_DEPARTMENT ||--o{ HR_EMPLOYEE : "belongs_to"
+
+  WH_SUPPLIER ||--o{ PR_PURCHASE_ORDER : "supplier"
+  PR_PURCHASE_ORDER ||--o{ PR_PO_LINE : "lines"
+  WH_PRODUCT ||--o{ PR_PO_LINE : "ordered_item"
+
+  PR_PURCHASE_ORDER ||--o| FI_INVOICE : "3-way match optional"
+
+  AUTH_USER {
+    uuid id PK
+    string email UK
+    string password_hash
+    string role
+    timestamptz created_at
+  }
+
+  HR_DEPARTMENT {
+    uuid id PK
+    string name UK
+    timestamptz created_at
+  }
+
+  HR_EMPLOYEE {
+    uuid id PK
+    uuid department_id FK
+    uuid user_id FK_null
+    string full_name
+    string job_title
+    timestamptz created_at
+  }
+
+  WH_SUPPLIER {
+    uuid id PK
+    string name
+    string contact_email
+    timestamptz created_at
+  }
+
+  PR_PURCHASE_ORDER {
+    uuid id PK
+    uuid supplier_id FK
+    string status
+    decimal total_amount
+    timestamptz created_at
+  }
+
+  PR_PO_LINE {
+    uuid id PK
+    uuid purchase_order_id FK
+    uuid product_id FK
+    int quantity
+    decimal unit_price
+  }
+
+  WH_PRODUCT {
+    uuid id PK
+    string sku UK
+    string name
+    int on_hand_qty
+    timestamptz created_at
+  }
+
+  FI_INVOICE {
+    uuid id PK
+    uuid purchase_order_id FK_null
+    string status
+    decimal amount
+    timestamptz created_at
+  }
